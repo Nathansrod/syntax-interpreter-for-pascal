@@ -1,0 +1,14 @@
+{Programa que calcula o salario de funcionarios}
+
+{Program CalcularSalario;
+      Var TempoEmAnos, ValorSalario: Integer;
+      Begin
+            If(TempoEmAnos > 10) Then
+                  ValorSalario := 100;
+            Else
+                  ValorSalario := ValorSalario * 2;
+      End;
+      Writeln('Processamento \t \n \n \t \r feito com sucesso');
+End.}
+
+program.
