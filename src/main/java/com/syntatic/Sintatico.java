@@ -16,7 +16,7 @@ public class Sintatico {
         programa();
     }
 
-    // <programa> ::= program <id> {A1} <corpo> • {A30}
+    //<programa> ::= program <id> {A1} <corpo> • {A30}
     public void programa() {
         if (testarPalavraReservada("program")) {
             token = lexico.getToken();
@@ -27,10 +27,10 @@ public class Sintatico {
                 token = lexico.getToken();
                 //{A30}
             } else {
-                mostrarMensagemErro("Faltou ponto final no PROGRAM");
+                mostrarMensagemErro("<programa> Faltou ponto final no 'program'");
             }
         } else {
-            mostrarMensagemErro("Faltou começar o programa com PROGRAM");
+            mostrarMensagemErro("<programa> Faltou começar o programa com 'program'");
         }
     }
 
@@ -44,11 +44,11 @@ public class Sintatico {
                 token = lexico.getToken();
             }
             else {
-                mostrarMensagemErro("Faltou 'end'");
+                mostrarMensagemErro("<corpo/begin> Faltou 'end'");
             }
         }
         else {
-            mostrarMensagemErro("Faltou 'begin'");
+            mostrarMensagemErro("<corpo> Faltou 'begin'");
         }
     }
 
@@ -68,7 +68,7 @@ public class Sintatico {
             cont_dc();
         }
         else{
-            mostrarMensagemErro("Faltou ';'");
+            mostrarMensagemErro("<mais_dc> Faltou ';'");
         }
     }
 
@@ -88,7 +88,7 @@ public class Sintatico {
             tipo_var();
         }
         else {
-            mostrarMensagemErro("Faltou ':'");
+            mostrarMensagemErro("<dvar> Faltou ':'");
         }
     }
 
@@ -98,7 +98,7 @@ public class Sintatico {
             token = lexico.getToken();
         }
         else {
-            mostrarMensagemErro("Tipo de variavel invalido");
+            mostrarMensagemErro("<tipo_var> Tipo de variavel invalido");
         }
     }
 
@@ -130,13 +130,22 @@ public class Sintatico {
             cont_sentencas();
         }
         else {
-            mostrarMensagemErro("Faltou ';'");
+            mostrarMensagemErro("<mais_sentencas> Faltou ';'");
         }
     }
 
     //<cont_sentencas> ::= <sentencas> | vazio
     public void cont_sentencas() {
-        sentencas();
+        //read, write, for, repeat, while, if
+        if(testarPalavraReservada("read") ||
+           testarPalavraReservada("write") ||
+           testarPalavraReservada("for") ||
+           testarPalavraReservada("repeat") ||
+           testarPalavraReservada("while") ||
+           testarPalavraReservada("if") ||
+           token.getClasse().equals(Classe.cIdent)) {
+            sentencas();
+        }
     }
 
     //<var_read> ::= <id> {A5} <mais_var_read>
@@ -201,11 +210,11 @@ public class Sintatico {
                     //A28();
                 }
                 else {
-                    mostrarMensagemErro("Faltou 'to'");
+                    mostrarMensagemErro("<comando/for> Faltou 'to'");
                 }
             }
             else {
-                mostrarMensagemErro("Faltou operador ':='");
+                mostrarMensagemErro("<comando/for> Faltou operador ':='");
             }
         }
         else if(testarPalavraReservada("repeat")) {
@@ -221,15 +230,15 @@ public class Sintatico {
                         //A24();
                     }
                     else {
-                        mostrarMensagemErro("Faltou ')'");
+                        mostrarMensagemErro("<comando/until> Faltou ')'");
                     }
                 }
                 else {
-                    mostrarMensagemErro("Faltou '('");
+                    mostrarMensagemErro("<comando/until> Faltou '('");
                 }
             }
             else {
-                mostrarMensagemErro("Faltou 'until'");
+                mostrarMensagemErro("<comando/repeat> Faltou 'until'");
             }
         }
         else if(testarPalavraReservada("while")) {
@@ -251,24 +260,24 @@ public class Sintatico {
                                 //A22();
                             }
                             else {
-                                mostrarMensagemErro("Faltou 'end'");
+                                mostrarMensagemErro("<comando/while> Faltou 'end'");
                             }
                         }
                         else {
-                            mostrarMensagemErro("Faltou 'begin'");
+                            mostrarMensagemErro("<comando/while> Faltou 'begin'");
                         }
                     }
                     else {
-                        mostrarMensagemErro("Faltou 'do'");
+                        mostrarMensagemErro("<comando/while> Faltou 'do'");
                     }
 
                 }
                 else {
-                    mostrarMensagemErro("Faltou ')'");
+                    mostrarMensagemErro("<comando/while> Faltou ')'");
                 }
             }
             else {
-                mostrarMensagemErro("Faltou '('");
+                mostrarMensagemErro("<comando/while> Faltou '('");
             }
         }
         else if(testarPalavraReservada("if")) {
@@ -289,20 +298,20 @@ public class Sintatico {
                                 //A19();
                             }
                             else {
-                                mostrarMensagemErro("Faltou 'end'");
+                                mostrarMensagemErro("<comando/if> Faltou 'end'");
                             }
                         }
                         else {
-                            mostrarMensagemErro("Faltou 'begin'");
+                            mostrarMensagemErro("<comando/if> Faltou 'begin'");
                         }
                     }
                 }
                 else {
-                    mostrarMensagemErro("Faltou '('");
+                    mostrarMensagemErro("<comando/if> Faltou '('");
                 }
             }
             else {
-                mostrarMensagemErro("Faltou ')'");
+                mostrarMensagemErro("<comando/if> Faltou ')'");
             }
         }
         else {
@@ -314,7 +323,7 @@ public class Sintatico {
                 //A14();
             }
             else {
-                mostrarMensagemErro("Faltou operador ':='");
+                mostrarMensagemErro("<comando> Faltou operador ':='");
             }
         }
     }
@@ -339,11 +348,11 @@ public class Sintatico {
                     token = lexico.getToken();
                 }
                 else {
-                    mostrarMensagemErro("Faltou 'end'");
+                    mostrarMensagemErro("<pfalsa> Faltou 'end'");
                 }
             }
             else {
-                mostrarMensagemErro("Faltou 'begin'");
+                mostrarMensagemErro("<pfalsa> Faltou 'begin'");
             }
         }
     }
@@ -359,7 +368,7 @@ public class Sintatico {
             token = lexico.getToken();
         }
         else {
-            mostrarMensagemErro("Operador relacional invalido");
+            mostrarMensagemErro("<relacao> Operador relacional invalido");
         }
     }
 
@@ -386,7 +395,7 @@ public class Sintatico {
             token = lexico.getToken();
         }
         else {
-            mostrarMensagemErro("Faltou + ou -");
+            mostrarMensagemErro("<op_ad> Faltou + ou -");
         }
     }
 
@@ -413,28 +422,32 @@ public class Sintatico {
             token = lexico.getToken();
         }
         else {
-            mostrarMensagemErro("Faltou / ou *");
+            mostrarMensagemErro("<op_mul> Faltou / ou *");
         }
     }
 
     //<fator> ::= <id_var> {A7} | <intnum> {A8} | (<expressao>)
     public void fator() {
-        id();
-        //A7();
-        intnum();
-        //A8();
-        if(token.getClasse().equals(Classe.cParEsq)) {
+        if(token.getClasse().equals(Classe.cIdent)) {
+            id();
+            //A7();
+        }
+        else if(token.getClasse().equals(Classe.cInt)) {
+            intnum();
+            //A8();
+        }
+        else if(token.getClasse().equals(Classe.cParEsq)) {
             token = lexico.getToken();
             expressao();
             if(token.getClasse().equals(Classe.cParDir)) {
                 token = lexico.getToken();
             }
             else {
-                mostrarMensagemErro("Faltou ')'");
+                mostrarMensagemErro("<fator> Faltou ')'");
             }
         }
         else {
-            mostrarMensagemErro("Faltou '('");
+            mostrarMensagemErro("<fator> Faltou '('");
         }
     }
 
@@ -445,7 +458,7 @@ public class Sintatico {
             //A3();
         }
         else {
-            mostrarMensagemErro("Faltou identificador");
+            mostrarMensagemErro("<id> Faltou identificador");
         }
     }
 
@@ -456,7 +469,7 @@ public class Sintatico {
             //A4();
         }
         else {
-            mostrarMensagemErro("Faltou um inteiro/digito");
+            mostrarMensagemErro("<intnum> Faltou um inteiro/digito");
         }
     }
 
@@ -468,7 +481,7 @@ public class Sintatico {
 
     private boolean testarPalavraReservada(String palavra) {
         return token.getClasse() == Classe.cPalRes &&
-            token.getValor().getValorIdentificador().equals(palavra);
+            token.getValor().getValorIdentificador().toLowerCase().equals(palavra);
     }
 
 }
