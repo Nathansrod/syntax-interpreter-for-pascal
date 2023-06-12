@@ -15,7 +15,7 @@ public class LexicoAlt{
     private int linha = 1;
     private int coluna = 1;
     private char c;
-    private String[] palavrasReservadas = {"and", "array", "begin", "case", "const", "div", "do", "downto", "else", "end", "file", "for", "function", "goto", "if", "in", "integer", "label", "mod", "nil", "not", "of", "or", "packed", "procedure", "program", "read", "real", "record", "repeat", "read", "set", "then", "to", "type", "until", "var", "while", "with", "write", "writeln"};
+    private String[] palavrasReservadas = {"and", "array", "begin", "case", "const", "div", "do", "downto", "else", "end", "file", "for", "function", "goto", "if", "in", "integer", "label", "mod", "nil", "not", "of", "or", "packed", "procedure", "program", "read", "real", "record", "repeat", "read", "set", "then", "to", "type", "until", "var", "while", "with", "write", "writeln", "true", "false"};
     
 
     public LexicoAlt(String nomeArquivo){
