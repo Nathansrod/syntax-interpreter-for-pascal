@@ -1,10 +1,22 @@
 package com.syntatic;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Paths;
+
 public class Sintatico {
     
     private LexicoAlt lexico;
     private Token token;
     private String nomeArquivo;
+
+    private TabelaSimbolos tabela;
+    private String nomeArquivoSaida;
+	private String caminhoArquivoSaida;
+	private BufferedWriter bw;
+	private FileWriter fw;
 
     public Sintatico(String nomeArquivo) {
         this.nomeArquivo = nomeArquivo;
@@ -13,8 +25,30 @@ public class Sintatico {
     public void analisar() {
         lexico = new LexicoAlt(nomeArquivo);
         token = lexico.getToken();
-        programa();
-    }
+		nomeArquivoSaida = "../output/codigo.c";
+		caminhoArquivoSaida = Paths.get(nomeArquivoSaida).toAbsolutePath().toString();
+		bw = null;
+		fw = null;
+		try {
+			fw = new FileWriter(caminhoArquivoSaida, Charset.forName("UTF-8"));
+			bw = new BufferedWriter(fw);
+			programa();
+			bw.close();
+			fw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("== TABELA DE SIMBOLOS ==");
+		System.out.println(tabela);
+    }    
+
+    private void gerarCodigo(String instrucoes) {
+		try {
+			bw.write(instrucoes + "\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
     //<programa> ::= program <id> {A1} ; <corpo> • {A45}
     public void programa() {
