@@ -1,5 +1,8 @@
 Program Teste
-      Var x, y: Integer;
+      Var x, y, z: Integer;
       Begin
+            write('Deu certo!');
             x := 5;
+            y := 8;
+            z := x + y;
       End.

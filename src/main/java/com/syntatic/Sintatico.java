@@ -18,7 +18,7 @@ public class Sintatico {
 
     //<programa> ::= program <id> {A1} <corpo> • {A45}
     public void programa() {
-        if (testarPalavraReservada("program")) {
+            if (testarPalavraReservada("program")) {
             token = lexico.getToken();
             id();
             //{A1}
@@ -212,12 +212,36 @@ public class Sintatico {
         }
         else if(testarPalavraReservada("write")) {
             token = lexico.getToken();
-            exp_write();
+            if (token.getClasse().equals(Classe.cParEsq)) {
+                token = lexico.getToken();
+                exp_write();
+                if (token.getClasse().equals(Classe.cParDir)) {
+                    token = lexico.getToken();
+                }
+                else {
+                    mostrarMensagemErro("<comando/write> faltou ')'");    
+                }
+            }            
+            else {
+                mostrarMensagemErro("<comando/write> faltou '('");
+            }
         }
         else if(testarPalavraReservada("writeln")) {
             token = lexico.getToken();
-            exp_write();
-            //{A61}
+            if (token.getClasse().equals(Classe.cParEsq)) {
+                token = lexico.getToken();
+                exp_write();
+                if (token.getClasse().equals(Classe.cParDir)) {
+                    token = lexico.getToken();
+                    //{A61};
+                }
+                else {
+                    mostrarMensagemErro("<comando/writeln> faltou ')'");    
+                }
+            }            
+            else {
+                mostrarMensagemErro("<comando/writeln> faltou '('");
+            }
         }
         else if(testarPalavraReservada("for")) {
             token = lexico.getToken();
@@ -374,7 +398,7 @@ public class Sintatico {
     //<expressao_logica> ::= <termo_logico> <mais_expr_logica>
     public void expressao_logica() {
         termo_logico();
-        mais_exp_logica();
+        mais_expr_logica();
     }
 
     //<mais_expr_logica> ::= or <termo_logico> <mais_expr_logica> {A26} | vazio
