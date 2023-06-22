@@ -1,4 +1,4 @@
-Program Teste
+Program Teste;
       Var x, y, z: Integer;
       Begin
             write('Deu certo!');

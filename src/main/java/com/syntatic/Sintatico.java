@@ -16,18 +16,24 @@ public class Sintatico {
         programa();
     }
 
-    //<programa> ::= program <id> {A1} <corpo> • {A45}
+    //<programa> ::= program <id> {A1} ; <corpo> • {A45}
     public void programa() {
             if (testarPalavraReservada("program")) {
             token = lexico.getToken();
             id();
             //{A1}
-            corpo();
-            if (token.getClasse() == Classe.cPonto) {
+            if (token.getClasse().equals(Classe.cPontoVirg)) {
                 token = lexico.getToken();
-                //{A45}
-            } else {
-                mostrarMensagemErro("<programa> Faltou ponto final no 'program'");
+                corpo();
+                if (token.getClasse() == Classe.cPonto) {
+                    token = lexico.getToken();
+                    //{A45}
+                } else {
+                    mostrarMensagemErro("<programa> Faltou ponto final no 'program'");
+                }
+            }
+            else {
+                mostrarMensagemErro("<programa> Faltou ; depois do nome");
             }
         } else {
             mostrarMensagemErro("<programa> Faltou começar o programa com 'program'");
