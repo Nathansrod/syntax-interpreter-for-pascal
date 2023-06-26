@@ -5,6 +5,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Sintatico {
     
@@ -17,6 +19,8 @@ public class Sintatico {
 	private String caminhoArquivoSaida;
 	private BufferedWriter bw;
 	private FileWriter fw;
+    private String instrucoes;
+    private List<Registro> ultimasVariaveisDeclaradas = new ArrayList<>();
 
     public Sintatico(String nomeArquivo) {
         this.nomeArquivo = nomeArquivo;
@@ -54,20 +58,25 @@ public class Sintatico {
     public void programa() {
             if (testarPalavraReservada("program")) {
             token = lexico.getToken();
-            id();
-            //{A1}
-            if (token.getClasse().equals(Classe.cPontoVirg)) {
-                token = lexico.getToken();
-                corpo();
-                if (token.getClasse() == Classe.cPonto) {
+            if (token.getClasse().equals(Classe.cIdent)) {
+                A1();
+                id();
+                if (token.getClasse().equals(Classe.cPontoVirg)) {
                     token = lexico.getToken();
-                    //{A45}
-                } else {
-                    mostrarMensagemErro("<programa> Faltou ponto final no 'program'");
+                    corpo();
+                    if (token.getClasse() == Classe.cPonto) {
+                        token = lexico.getToken();
+                        //{A45}
+                    } else {
+                        mostrarMensagemErro("<programa> Faltou ponto final no 'program'");
+                    }
+                }
+                else {
+                    mostrarMensagemErro("<programa> Faltou ; depois do nome");
                 }
             }
             else {
-                mostrarMensagemErro("<programa> Faltou ; depois do nome");
+                mostrarMensagemErro("<programa> Faltou identificador depois de program");
             }
         } else {
             mostrarMensagemErro("<programa> Faltou começar o programa com 'program'");
@@ -77,7 +86,7 @@ public class Sintatico {
     //<corpo> ::= <declara> {A44} begin <sentencas> end {A46}
     public void corpo() {
         declara();
-        //A{44}
+        //A{44} N PRECISA
         if(testarPalavraReservada("begin")) {
             token = lexico.getToken();
             sentencas();
@@ -127,8 +136,13 @@ public class Sintatico {
         variaveis();
         if(token.getClasse().equals(Classe.cDoisPontos)) {
             token = lexico.getToken();
-            tipo_var();
-            //{A2}
+            if(testarPalavraReservada("integer")) {
+                A2();
+                tipo_var();
+            }
+            else {
+                mostrarMensagemErro("<dvar> Tipo de variavel invalido");
+            }
         }
         else {
             mostrarMensagemErro("<dvar> Faltou ':'");
@@ -147,9 +161,14 @@ public class Sintatico {
 
     //<variaveis> ::= <id> {A3} <mais_var>
     public void variaveis() {
-        id();
-        //{A3};
-        mais_var();
+        if (token.getClasse().equals(Classe.cIdent)) {
+            A3();
+            id();
+            mais_var();
+        }
+        else {
+            mostrarMensagemErro("<variaveis> Faltou identificador");
+        }
     }
 
     //<mais_var> ::=  ,  <variaveis> | vazio
@@ -193,9 +212,14 @@ public class Sintatico {
 
     //<var_read> ::= <id> {A8} <mais_var_read>
     public void var_read() {
-        id();
-        //{A8};
-        mais_var_read();
+        if (token.getClasse().equals(Classe.cIdent)) {
+            A8();
+            id();
+            mais_var_read();
+        }
+        else {
+            mostrarMensagemErro("<var_read> Faltou identificador");
+        }
     }
 
     //<mais_var_read> ::=  ,  <var_read> | vazio
@@ -211,13 +235,13 @@ public class Sintatico {
                 <intnum> {A43} <mais_exp_write>*/
     public void exp_write() {
         if(token.getClasse().equals(Classe.cIdent)) {
+            A9();            
             id();
-            //{A9}
             mais_exp_write();
         }
         else if(token.getClasse().equals(Classe.cString)) {
+            A59();
             string();
-            //{A59}
             mais_exp_write();
         }
         else if(token.getClasse().equals(Classe.cInt)) {
@@ -698,6 +722,7 @@ public class Sintatico {
         }
     }
 
+    //Auxiliares
     private void mostrarMensagemErro(String mensagem) {
         System.out.println("Linha: " + token.getLinha() + 
         ", Coluna: " + token.getColuna() +
@@ -709,4 +734,83 @@ public class Sintatico {
             token.getValor().getValorIdentificador().toLowerCase().equals(palavra);
     }
 
+    //Ações
+    public void A1() {
+        tabela = new TabelaSimbolos();
+        tabela.setTabelaPai(null);
+        Registro registro = new Registro();
+        registro.setNome(token.getValor().getValorIdentificador());
+        registro.setCategoria(Categoria.PROGRAMAPRINCIPAL);
+        tabela.inserirRegistro(registro);
+        instrucoes = "#include <stdio.h>\n" +
+                     "#include <stlib.h>\n\n" +
+                     "int main(){";
+        gerarCodigo(instrucoes);
+    }
+
+    public void A2() {
+        if (testarPalavraReservada("integer")) {
+            instrucoes = "\tint ";
+            while (ultimasVariaveisDeclaradas.size() > 0) {
+                ultimasVariaveisDeclaradas.get(0).setTipo(Tipo.integer);
+                instrucoes += ultimasVariaveisDeclaradas.get(0).getNome();
+                ultimasVariaveisDeclaradas.remove(0);
+                if (ultimasVariaveisDeclaradas.size() > 0) {
+                    instrucoes += ", ";
+                }
+            }
+            instrucoes += ";";
+            gerarCodigo(instrucoes);
+        }
+    }
+
+    public void A3() {
+        if (tabela.jaTemIdentificador(token)) {
+            mostrarMensagemErro("INFO: Identificador ja existe");
+        }
+        else {
+            Registro registro = new Registro();
+            registro.setNome(token.getValor().getValorIdentificador());
+            registro.setCategoria(Categoria.VARIAVEL);
+            tabela.inserirRegistro(registro);
+            ultimasVariaveisDeclaradas.add(registro);
+        }
+    }
+
+    public void A8() {
+        if (tabela.jaTemIdentificadorRecursiva(token)) {
+            Registro registro = tabela.getIdentificadorRecursiva(token);
+            if (registro.getCategoria().equals(Categoria.VARIAVEL) || registro.getCategoria().equals(Categoria.PARAMETRO)) {
+                instrucoes = "\tscanf(\"%d\", &" + registro.getNome() + ");";
+                gerarCodigo(instrucoes); 
+            }
+            else {
+                mostrarMensagemErro("Erro A8: identificador nao e uma variavel");
+            }
+        }
+        else {
+            mostrarMensagemErro("Erro A8: variavel nao declada " + token.getValor().getValorIdentificador());
+        }
+    }
+    
+    public void A9() {
+        if (tabela.jaTemIdentificadorRecursiva(token)) {
+            Registro registro = tabela.getIdentificadorRecursiva(token);
+            if (registro.getCategoria().equals(Categoria.VARIAVEL) || registro.getCategoria().equals(Categoria.PARAMETRO)) {
+                instrucoes = "\tprintf(\"%d\", " + registro.getNome() + ");";
+                gerarCodigo(instrucoes); 
+            }
+            else {
+                mostrarMensagemErro("Erro A9: identificador nao e uma variavel");
+            }
+        }
+        else {
+            mostrarMensagemErro("Erro A9: variavel nao declada " + token.getValor().getValorIdentificador());
+        }
+    }
+
+    public void A59() {
+        instrucoes = "\tprintf(\"" + token.getValor().getValorIdentificador() + "\");";
+        gerarCodigo(instrucoes); 
+    }
 }

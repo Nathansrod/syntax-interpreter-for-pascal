@@ -268,7 +268,6 @@ public class LexicoAlt{
                     return token; 
                 }
                 else if(Character.compare(this.c, '\'') == 0){
-                    lexema.append(this.c);
                     colunaInicial = this.coluna;
                     this.c = (char)this.br.read();
                     this.coluna += 1;
@@ -277,7 +276,6 @@ public class LexicoAlt{
                         this.c = (char)this.br.read();
                         this.coluna += 1;
                     }
-                    lexema.append(this.c);
                     this.c = (char)this.br.read();
                     this.coluna += 1;
                     Token token = new Token();

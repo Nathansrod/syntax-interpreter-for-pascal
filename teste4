@@ -1,8 +1,10 @@
 Program Teste;
       Var x, y, z: Integer;
       Begin
-            write('Deu certo!');
-            x := 5;
+            read x;
+            write(x);
+            write('Funcionou ebaaa!'); 
             y := 8;
             z := x + y;
+            write('Deu certo!');
       End.
