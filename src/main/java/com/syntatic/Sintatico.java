@@ -21,6 +21,7 @@ public class Sintatico {
 	private FileWriter fw;
     private String instrucoes;
     private List<Registro> ultimasVariaveisDeclaradas = new ArrayList<>();
+    private String varDoFor;
 
     public Sintatico(String nomeArquivo) {
         this.nomeArquivo = nomeArquivo;
@@ -83,16 +84,15 @@ public class Sintatico {
         }
     }
 
-    //<corpo> ::= <declara> {A44} begin <sentencas> end {A46}
+    //<corpo> ::= <declara> {A44}->n precisa begin <sentencas> end {A46}
     public void corpo() {
         declara();
-        //A{44} N PRECISA
         if(testarPalavraReservada("begin")) {
             token = lexico.getToken();
             sentencas();
             if(testarPalavraReservada("end")) {
                 token = lexico.getToken();
-                //{A46}
+                A46();
             }
             else {
                 mostrarMensagemErro("<corpo/begin> Faltou 'end'");
@@ -245,8 +245,8 @@ public class Sintatico {
             mais_exp_write();
         }
         else if(token.getClasse().equals(Classe.cInt)) {
+            A43();
             intnum();
-            //{A43}
             mais_exp_write();
         }
     }
@@ -265,10 +265,10 @@ public class Sintatico {
             writeln ( <exp_write ) {A61}|
             for <id> {A57} := <expressao> {A11} to <expressao> {A12} 
             do begin <sentencas> end {A13} |
-            repeat {A14} <sentencas> until ( <condicao> ) {A15} |
-            while {A16} ( <condicao> ) {A17} do begin <sentencas> end {A18} |
-            if ( <condicao> ) {A19} then begin <sentencas> end {A20} <pfalsa> {A21} |
-            <id> {A49} := <expressao> {A22}*/
+            repeat {A14} <sentencas> until ( <expressao_logica> ) {A15} |
+            while {A16} ( <expressao_logica> ) {A17} do begin <sentencas> end {A18} |
+            if ( <expressao_logica> ) {A19} then begin <sentencas> end {A20} <pfalsa> {A21} |
+            <id> {A49} := <expressao> {A22} | vazio*/
     public void comando() {
         if(testarPalavraReservada("read")) {
             token = lexico.getToken();
@@ -297,7 +297,7 @@ public class Sintatico {
                 exp_write();
                 if (token.getClasse().equals(Classe.cParDir)) {
                     token = lexico.getToken();
-                    //{A61};
+                    A61();
                 }
                 else {
                     mostrarMensagemErro("<comando/writeln> faltou ')'");    
@@ -309,15 +309,27 @@ public class Sintatico {
         }
         else if(testarPalavraReservada("for")) {
             token = lexico.getToken();
+            A57();
             id();
-            //{A57}
             if(token.getClasse().equals(Classe.cAtrib)) {
                 token = lexico.getToken();
-                expressao();
-                //{A11}
+                A11();
+                expressao();  
                 if(testarPalavraReservada("to")) {
+                    token = lexico.getToken();
+                    A12();
                     expressao();
-                    //{A12}
+                    if(testarPalavraReservada("do")) {
+                        token = lexico.getToken();
+                        if(testarPalavraReservada("begin")) {
+                            token = lexico.getToken();
+                            sentencas();
+                            if(testarPalavraReservada("end")) {
+                                token = lexico.getToken();
+                                A13();
+                            }
+                        }
+                    }
                 }
                 else {
                     mostrarMensagemErro("<comando/for> Faltou 'to'");
@@ -329,15 +341,15 @@ public class Sintatico {
         }
         else if(testarPalavraReservada("repeat")) {
             token = lexico.getToken();
-            //{A14}
+            A14();
             sentencas();
             if(testarPalavraReservada("until")) {
                 if(token.getClasse().equals(Classe.cParEsq)) {
                     token = lexico.getToken();
-                    condicao();
+                    expressao_logica();
                     if(token.getClasse().equals(Classe.cParDir)) {
                         token = lexico.getToken();
-                        //{A15}
+                        //A15();
                     }
                     else {
                         mostrarMensagemErro("<comando/until> Faltou ')'");
@@ -356,7 +368,7 @@ public class Sintatico {
             //{A16};
             if(token.getClasse().equals(Classe.cParEsq)) {
                 token = lexico.getToken();
-                condicao();
+                expressao_logica();
                 if(token.getClasse().equals(Classe.cParDir)) {
                     token = lexico.getToken();
                     //{A17}
@@ -394,7 +406,7 @@ public class Sintatico {
             token = lexico.getToken();
             if(token.getClasse().equals(Classe.cParEsq)) {
                 token = lexico.getToken();
-                condicao();
+                expressao_logica();
                 if(token.getClasse().equals(Classe.cParDir)) {
                     token = lexico.getToken();
                     //{A19};
@@ -424,13 +436,13 @@ public class Sintatico {
                 mostrarMensagemErro("<comando/if> Faltou ')'");
             }
         }
-        else {
+        else if(token.getClasse().equals(Classe.cIdent)){
+            A49();
             id();
-            //A13();
             if(token.getClasse().equals(Classe.cAtrib)) {
                 token = lexico.getToken();
                 expressao();
-                //A14();
+                A22();
             }
             else {
                 mostrarMensagemErro("<comando> Faltou operador ':='");
@@ -508,14 +520,14 @@ public class Sintatico {
         }
         else if(testarPalavraReservada("not")) {
             token = lexico.getToken();
+            A28();
             fator_logico();
-            //{A28}
         }
         else if(testarPalavraReservada("true")) {
-            //{A29}
+            A29();
         }
         else if(testarPalavraReservada("false")) {
-            //{A30}
+            A30();
         }
         else {
             relacional();
@@ -532,99 +544,56 @@ public class Sintatico {
         expressao();
         if(token.getClasse().equals(Classe.cIgual)) {
             token = lexico.getToken();
+            A31();
             expressao();
-            //{A31}
         }
         else if(token.getClasse().equals(Classe.cMaior)) {
             token = lexico.getToken();
+            A32();
             expressao();
-            //{A32}
         }
         else if(token.getClasse().equals(Classe.cMaiorIgual)) {
             token = lexico.getToken();
+            A33();
             expressao();
-            //{A33}
         }
         else if(token.getClasse().equals(Classe.cMenor)) {
             token = lexico.getToken();
+            A34();
             expressao();
-            //{A34}
         }
         else if(token.getClasse().equals(Classe.cMenorIgual)) {
             token = lexico.getToken();
+            A35();
             expressao();
-            //{A35}
         }
         else if(token.getClasse().equals(Classe.cDiferente)) {
             token = lexico.getToken();
+            A36();
             expressao();
-            //{A36}
-        }
-    }
-
-    /*<mais_expressao> ::= + <termo> <mais_expressao> {A37} |
-                     - <termo> <mais_expressao> {A38} | vazio*/
-    public void mais_expressao() {
-        if(token.getClasse().equals(Classe.cSoma)) {
-            termo();
-            mais_expressao();
-            //{A37}
-        }
-        else if(token.getClasse().equals(Classe.cSub)) {
-            termo();
-            mais_expressao();
-            //{A38}
-        }
-    }
-    
-    //<condicao> ::= <expressao> <relacao> {A15} <expressao> {A16}
-    public void condicao() {
-        expressao();
-        relacao();
-        //{A15};
-        expressao();
-        //{A16};
-    }
-
-    //<relacao> ::= = | > | < | >= | <= | <>
-    public void relacao() {
-        if(token.getClasse().equals(Classe.cIgual)
-        || token.getClasse().equals(Classe.cMaior)
-        || token.getClasse().equals(Classe.cMenor)
-        || token.getClasse().equals(Classe.cMaiorIgual)
-        || token.getClasse().equals(Classe.cMenorIgual)
-        || token.getClasse().equals(Classe.cDiferente)) {
-            token = lexico.getToken();
-        }
-        else {
-            mostrarMensagemErro("<relacao> Operador relacional invalido");
         }
     }
 
     //<expressao> ::= <termo> <outros_termos>
     public void expressao() {
         termo();
-        outros_termos();
+        mais_expressao();
     }
 
-    //<outros_termos> ::= <op_ad> {A9} <termo> {A10} <outros_termos>  | vazio
-    public void outros_termos() {
-        if(token.getClasse().equals(Classe.cSoma) || token.getClasse().equals(Classe.cSub)) {
-            op_ad();
-            //A9();
-            termo();
-            //A10();
-            outros_termos();
-        }
-    }
-
-    //<op_ad> ::= + | -
-    public void op_ad() {
-        if(token.getClasse().equals(Classe.cSoma) || token.getClasse().equals(Classe.cSub)) {
+    /*<mais_expressao> ::= + <termo> <mais_expressao> {A37} |
+                     - <termo> <mais_expressao> {A38} | vazio*/
+    public void mais_expressao() {
+        if(token.getClasse().equals(Classe.cSoma)) {
             token = lexico.getToken();
+            A37();
+            termo();
+            mais_expressao();
         }
-        else {
-            mostrarMensagemErro("<op_ad> Faltou + ou -");
+        else if(token.getClasse().equals(Classe.cSub)) {
+            token = lexico.getToken();
+            A38();
+            termo();
+            mais_expressao();
         }
     }
 
@@ -638,47 +607,28 @@ public class Sintatico {
                  / <fator> <mais_termo> {A40} | vazio */
     public void mais_termo() {
         if(token.getClasse().equals(Classe.cMult)) {
+            token = lexico.getToken();
+            A39();
             fator();
             mais_termo();
-            //{A39}
         }
         else if(token.getClasse().equals(Classe.cDiv)) {
+            token = lexico.getToken();
+            A40();
             fator();
             mais_termo();
-            //{A40}
-        }
-    }
-
-    //<mais_fatores> ::= <op_mul> {A11} <fator> {A12} <mais_fatores> | vazio
-    public void mais_fatores() {
-        if(token.getClasse().equals(Classe.cMult) || token.getClasse().equals(Classe.cDiv)) {
-            op_mul();
-            //A11();
-            fator();
-            //A12();
-            mais_fatores();
-        }
-    }
-
-    //<op_mul> ::= * | /
-    public void op_mul() {
-        if(token.getClasse().equals(Classe.cMult) || token.getClasse().equals(Classe.cDiv)) {
-            token = lexico.getToken();
-        }
-        else {
-            mostrarMensagemErro("<op_mul> Faltou / ou *");
         }
     }
 
     //<fator> ::= <id> {A55} | <intnum> {A41} | ( <expressao> )
     public void fator() {
         if(token.getClasse().equals(Classe.cIdent)) {
+            A55();
             id();
-            //{A55}
         }
         else if(token.getClasse().equals(Classe.cInt)) {
+            A41();
             intnum();
-            //{A41}
         }
         else if(token.getClasse().equals(Classe.cParEsq)) {
             token = lexico.getToken();
@@ -750,7 +700,7 @@ public class Sintatico {
 
     public void A2() {
         if (testarPalavraReservada("integer")) {
-            instrucoes = "\tint ";
+            instrucoes = "int ";
             while (ultimasVariaveisDeclaradas.size() > 0) {
                 ultimasVariaveisDeclaradas.get(0).setTipo(Tipo.integer);
                 instrucoes += ultimasVariaveisDeclaradas.get(0).getNome();
@@ -781,7 +731,7 @@ public class Sintatico {
         if (tabela.jaTemIdentificadorRecursiva(token)) {
             Registro registro = tabela.getIdentificadorRecursiva(token);
             if (registro.getCategoria().equals(Categoria.VARIAVEL) || registro.getCategoria().equals(Categoria.PARAMETRO)) {
-                instrucoes = "\tscanf(\"%d\", &" + registro.getNome() + ");";
+                instrucoes = "scanf(\"%d\", &" + registro.getNome() + ");";
                 gerarCodigo(instrucoes); 
             }
             else {
@@ -797,7 +747,7 @@ public class Sintatico {
         if (tabela.jaTemIdentificadorRecursiva(token)) {
             Registro registro = tabela.getIdentificadorRecursiva(token);
             if (registro.getCategoria().equals(Categoria.VARIAVEL) || registro.getCategoria().equals(Categoria.PARAMETRO)) {
-                instrucoes = "\tprintf(\"%d\", " + registro.getNome() + ");";
+                instrucoes = "printf(\"%d\", " + registro.getNome() + ");";
                 gerarCodigo(instrucoes); 
             }
             else {
@@ -809,8 +759,138 @@ public class Sintatico {
         }
     }
 
-    public void A59() {
-        instrucoes = "\tprintf(\"" + token.getValor().getValorIdentificador() + "\");";
+    public void A11() {
+        instrucoes += token.getValor().getValorInteiro() + ";";
+    }
+
+    public void A12() {
+        instrucoes += varDoFor + "<" + token.getValor().getValorInteiro() + ";" + varDoFor + "++){";
+        gerarCodigo(instrucoes);
+    }
+
+    public void A13() { // Fim do for
+        instrucoes = "}";
+        gerarCodigo(instrucoes);
+    }
+
+    public void A14() {
+        instrucoes = "do{";
+        gerarCodigo(instrucoes);
+    }
+
+    public void A22() {
+        instrucoes += ";";
+        gerarCodigo(instrucoes);
+    }
+
+    public void A28() {
+        instrucoes += " !";
+    }
+
+    public void A29() {
+        instrucoes += " true";
+    }
+
+    public void A30() {
+        instrucoes += " false";
+    }
+
+    public void A31() {
+        instrucoes += " ==";
+    }
+
+    public void A32() {
+        instrucoes += " >";
+    }
+
+    public void A33() {
+        instrucoes += " >=";
+    }
+
+    public void A34() {
+        instrucoes += " <";
+    }
+
+    public void A35() {
+        instrucoes += " <=";
+    }
+
+    public void A36() {
+        instrucoes += " !=";
+    }
+
+    public void A37() {
+        instrucoes += " + ";
+    }
+
+    public void A38() {
+        instrucoes += " - ";
+    }
+
+    public void A39() {
+        instrucoes += " * ";
+    }
+
+    public void A40() {
+        instrucoes += " / ";
+    }
+
+    public void A41() {
+        instrucoes += token.getValor().getValorInteiro();
+    }
+
+    public void A43() {
+        instrucoes = "printf(\"" + token.getValor().getValorInteiro() + "\");";
         gerarCodigo(instrucoes); 
+    }
+
+    public void A46() {
+        instrucoes = "return 0;\n}";
+        gerarCodigo(instrucoes);
+    }
+
+    public void A49() {
+        if (tabela.jaTemIdentificadorRecursiva(token)) {
+            Registro registro = tabela.getIdentificador(token);
+            if (registro.getCategoria().equals(Categoria.VARIAVEL)
+                || registro.getCategoria().equals(Categoria.PARAMETRO)) {
+                instrucoes = token.getValor().getValorIdentificador() + " = ";
+            }
+        }
+        else {
+            mostrarMensagemErro("Erro A49: elemento nao declarado " + token.getValor().getValorIdentificador());
+        }
+    }
+
+    public void A55() {
+        instrucoes += token.getValor().getValorIdentificador();
+    }
+
+    public void A57() {
+        if (tabela.jaTemIdentificadorRecursiva(token)) {
+            Registro registro = tabela.getIdentificadorRecursiva(token);
+            if (registro.getCategoria().equals(Categoria.VARIAVEL)
+                || registro.getCategoria().equals(Categoria.PARAMETRO)
+                || registro.getCategoria().equals(Categoria.FUNCAO)) {
+                varDoFor = token.getValor().getValorIdentificador();
+                instrucoes = "for(" + varDoFor + "=";
+            }
+            else {
+                mostrarMensagemErro("Erro A57: identificador nao e uma variavel");
+            }
+        }
+        else {
+            mostrarMensagemErro("Erro A57: variavel nao declada " + token.getValor().getValorIdentificador());
+        }
+    }
+
+    public void A59() {
+        instrucoes = "printf(\"" + token.getValor().getValorIdentificador() + "\");";
+        gerarCodigo(instrucoes); 
+    }
+
+    public void A61() {
+        instrucoes = "printf(\"\\n\");";
+        gerarCodigo(instrucoes);
     }
 }
