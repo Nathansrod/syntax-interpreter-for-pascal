@@ -19,7 +19,7 @@ public class Sintatico {
 	private String caminhoArquivoSaida;
 	private BufferedWriter bw;
 	private FileWriter fw;
-    private String instrucoes;
+    private String instrucoes = "";
     private List<Registro> ultimasVariaveisDeclaradas = new ArrayList<>();
     private String varDoFor;
 
@@ -30,7 +30,7 @@ public class Sintatico {
     public void analisar() {
         lexico = new LexicoAlt(nomeArquivo);
         token = lexico.getToken();
-		nomeArquivoSaida = "../output/codigo.c";
+		nomeArquivoSaida = "../output/"+nomeArquivo+".c";
 		caminhoArquivoSaida = Paths.get(nomeArquivoSaida).toAbsolutePath().toString();
 		bw = null;
 		fw = null;
@@ -274,7 +274,19 @@ public class Sintatico {
     public void comando() {
         if(testarPalavraReservada("read")) {
             token = lexico.getToken();
-            var_read();
+            if(token.getClasse().equals(Classe.cParEsq)) {
+                token = lexico.getToken();
+                var_read();
+                if(token.getClasse().equals(Classe.cParDir)) {
+                    token = lexico.getToken();
+                }
+                else {
+                    mostrarMensagemErro("<comando/read> Faltou ')'");
+                }
+            }
+            else {
+                mostrarMensagemErro("<comando/read> Faltou '('");
+            }
         }
         else if(testarPalavraReservada("write")) {
             token = lexico.getToken();
@@ -422,8 +434,10 @@ public class Sintatico {
                             if(testarPalavraReservada("end")) {
                                 token = lexico.getToken();
                                 A20();
-                                pfalsa();
-                                A21();
+                                if(testarPalavraReservada("else")) {
+                                    pfalsa();
+                                    A21();
+                                }
                             }
                             else {
                                 mostrarMensagemErro("<comando/if> Faltou 'end'");
@@ -502,6 +516,7 @@ public class Sintatico {
     //<mais_termo_logico> ::= and <fator_logico> <mais_termo_logico> {A27} | vazio
     public void mais_termo_logico() {
         if(testarPalavraReservada("and")) {
+            token = lexico.getToken();
             A27();
             fator_logico();
             mais_termo_logico();

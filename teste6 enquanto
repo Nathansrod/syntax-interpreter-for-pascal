@@ -1,0 +1,11 @@
+program enquanto;
+var
+    c: integer;
+begin
+    c := 1;
+    while (c <= 10) do
+    begin
+        write(c);
+        c := c + 1;
+    end;
+end.

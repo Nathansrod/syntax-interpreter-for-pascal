@@ -1,0 +1,10 @@
+program leitura;
+var
+    x,y,z : integer;
+begin
+    read(x);
+    read(y);
+    z := x * y;
+    write('Resultado: ');
+    write(z);
+end.

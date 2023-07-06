@@ -1,0 +1,20 @@
+Program Teste;
+      Var x, y, z: Integer;
+      Begin
+            x := 4;
+            y := 7;
+            if (x < y) then
+                  begin
+                        z := x + y;
+                        write('z = ');
+                        writeln(z);
+                  end;
+            while (x < z) do
+                  begin
+                        x := x * 2;
+                        y := y / 2;
+                        write('x = ');
+                        writeln(x);
+                  end;
+            
+      End.
