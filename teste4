@@ -1,8 +1,23 @@
 Program Teste;
       Var x, y, z: Integer;
       Begin
-            x := 1;
-            y := 2;
-            z := x + y;
-            write(z);
+            x := 4;
+            y := 7;
+            if (x > 5) then
+                  begin
+                        writeln('x e maior que 5');
+                  end
+            else
+                  begin
+                        writeln('x e menor que 5');
+                  end
+            end
+            if (y > 5) then
+                  begin
+                        writeln('y e maior que 5');
+                  end
+            else
+                  begin
+                        writeln('y e menor que 5');
+                  end;
       End.

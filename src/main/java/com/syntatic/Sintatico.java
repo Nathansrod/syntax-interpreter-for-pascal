@@ -50,6 +50,7 @@ public class Sintatico {
     private void gerarCodigo(String instrucoes) {
 		try {
 			bw.write(instrucoes + "\n");
+            this.instrucoes = "";
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -201,6 +202,7 @@ public class Sintatico {
         //read, write, for, repeat, while, if
         if(testarPalavraReservada("read") ||
            testarPalavraReservada("write") ||
+           testarPalavraReservada("writeln") ||
            testarPalavraReservada("for") ||
            testarPalavraReservada("repeat") ||
            testarPalavraReservada("while") ||
@@ -344,12 +346,13 @@ public class Sintatico {
             A14();
             sentencas();
             if(testarPalavraReservada("until")) {
+                token = lexico.getToken();
                 if(token.getClasse().equals(Classe.cParEsq)) {
                     token = lexico.getToken();
                     expressao_logica();
                     if(token.getClasse().equals(Classe.cParDir)) {
                         token = lexico.getToken();
-                        //A15();
+                        A15();
                     }
                     else {
                         mostrarMensagemErro("<comando/until> Faltou ')'");
@@ -365,13 +368,13 @@ public class Sintatico {
         }
         else if(testarPalavraReservada("while")) {
             token = lexico.getToken();
-            //{A16};
+            A16();
             if(token.getClasse().equals(Classe.cParEsq)) {
                 token = lexico.getToken();
                 expressao_logica();
                 if(token.getClasse().equals(Classe.cParDir)) {
                     token = lexico.getToken();
-                    //{A17}
+                    A17();
                     if(testarPalavraReservada("do")) {
                         token = lexico.getToken();
                         if(testarPalavraReservada("begin")) {
@@ -379,7 +382,7 @@ public class Sintatico {
                             sentencas();
                             if(testarPalavraReservada("end")) {
                                 token = lexico.getToken();
-                                //{A18};
+                                A18();
                             }
                             else {
                                 mostrarMensagemErro("<comando/while> Faltou 'end'");
@@ -406,18 +409,21 @@ public class Sintatico {
             token = lexico.getToken();
             if(token.getClasse().equals(Classe.cParEsq)) {
                 token = lexico.getToken();
+                A62(); // Gera o começo do if
                 expressao_logica();
                 if(token.getClasse().equals(Classe.cParDir)) {
                     token = lexico.getToken();
-                    //{A19};
+                    A19();
                     if(testarPalavraReservada("then")) {
                         token = lexico.getToken();
                         if(testarPalavraReservada("begin")) {
+                            token = lexico.getToken();
                             sentencas();
                             if(testarPalavraReservada("end")) {
-                                //{A20};
+                                token = lexico.getToken();
+                                A20();
                                 pfalsa();
-                                //{A21};
+                                A21();
                             }
                             else {
                                 mostrarMensagemErro("<comando/if> Faltou 'end'");
@@ -454,7 +460,7 @@ public class Sintatico {
     public void pfalsa () {
         if(testarPalavraReservada("else")) {
             token = lexico.getToken();
-            //{A25}
+            A25();
             if(testarPalavraReservada("begin")) {
                 token = lexico.getToken();
                 sentencas();
@@ -481,9 +487,9 @@ public class Sintatico {
     public void mais_expr_logica() {
         if(testarPalavraReservada("or")) {
             token = lexico.getToken();
+            A26();
             termo_logico();
             mais_expr_logica();
-            //{A26}
         }
     }
 
@@ -496,9 +502,9 @@ public class Sintatico {
     //<mais_termo_logico> ::= and <fator_logico> <mais_termo_logico> {A27} | vazio
     public void mais_termo_logico() {
         if(testarPalavraReservada("and")) {
+            A27();
             fator_logico();
             mais_termo_logico();
-            //{A27}
         }
     }
 
@@ -692,7 +698,7 @@ public class Sintatico {
         registro.setNome(token.getValor().getValorIdentificador());
         registro.setCategoria(Categoria.PROGRAMAPRINCIPAL);
         tabela.inserirRegistro(registro);
-        instrucoes = "#include <stdio.h>\n" +
+        instrucoes += "#include <stdio.h>\n" +
                      "#include <stlib.h>\n\n" +
                      "int main(){";
         gerarCodigo(instrucoes);
@@ -700,7 +706,7 @@ public class Sintatico {
 
     public void A2() {
         if (testarPalavraReservada("integer")) {
-            instrucoes = "int ";
+            instrucoes += "int ";
             while (ultimasVariaveisDeclaradas.size() > 0) {
                 ultimasVariaveisDeclaradas.get(0).setTipo(Tipo.integer);
                 instrucoes += ultimasVariaveisDeclaradas.get(0).getNome();
@@ -731,7 +737,7 @@ public class Sintatico {
         if (tabela.jaTemIdentificadorRecursiva(token)) {
             Registro registro = tabela.getIdentificadorRecursiva(token);
             if (registro.getCategoria().equals(Categoria.VARIAVEL) || registro.getCategoria().equals(Categoria.PARAMETRO)) {
-                instrucoes = "scanf(\"%d\", &" + registro.getNome() + ");";
+                instrucoes += "scanf(\"%d\", &" + registro.getNome() + ");";
                 gerarCodigo(instrucoes); 
             }
             else {
@@ -747,7 +753,7 @@ public class Sintatico {
         if (tabela.jaTemIdentificadorRecursiva(token)) {
             Registro registro = tabela.getIdentificadorRecursiva(token);
             if (registro.getCategoria().equals(Categoria.VARIAVEL) || registro.getCategoria().equals(Categoria.PARAMETRO)) {
-                instrucoes = "printf(\"%d\", " + registro.getNome() + ");";
+                instrucoes += "printf(\"%d\", " + registro.getNome() + ");";
                 gerarCodigo(instrucoes); 
             }
             else {
@@ -769,18 +775,66 @@ public class Sintatico {
     }
 
     public void A13() { // Fim do for
-        instrucoes = "}";
+        instrucoes += "}";
         gerarCodigo(instrucoes);
     }
 
     public void A14() {
-        instrucoes = "do{";
+        instrucoes += "do {";
+        gerarCodigo(instrucoes);
+    }
+
+    public void A15() {
+        String sentenca_logica = instrucoes;
+        instrucoes += "}while(" + sentenca_logica + ");";
+        gerarCodigo(instrucoes);
+    }
+
+    public void A16() {
+        instrucoes += "while(";
+    }
+
+    public void A17() {
+        instrucoes += "){";
+        gerarCodigo(instrucoes);
+    }
+
+    public void A18() {
+        instrucoes += "}";
+        gerarCodigo(instrucoes);
+    }
+
+    public void A19() {
+        instrucoes += "){";
+        gerarCodigo(instrucoes);
+    }
+
+    public void A20() {
+        instrucoes += "}";
+        gerarCodigo(instrucoes);
+    }
+
+    public void A21() {
+        instrucoes += "}";
         gerarCodigo(instrucoes);
     }
 
     public void A22() {
         instrucoes += ";";
         gerarCodigo(instrucoes);
+    }
+
+    public void A25() {
+        instrucoes += "else{";
+        gerarCodigo(instrucoes);
+    }
+
+    public void A26() {
+        instrucoes += " || ";
+    }
+
+    public void A27() {
+        instrucoes += " && ";
     }
 
     public void A28() {
@@ -796,27 +850,27 @@ public class Sintatico {
     }
 
     public void A31() {
-        instrucoes += " ==";
+        instrucoes += " == ";
     }
 
     public void A32() {
-        instrucoes += " >";
+        instrucoes += " > ";
     }
 
     public void A33() {
-        instrucoes += " >=";
+        instrucoes += " >= ";
     }
 
     public void A34() {
-        instrucoes += " <";
+        instrucoes += " < ";
     }
 
     public void A35() {
-        instrucoes += " <=";
+        instrucoes += " <= ";
     }
 
     public void A36() {
-        instrucoes += " !=";
+        instrucoes += " != ";
     }
 
     public void A37() {
@@ -840,12 +894,12 @@ public class Sintatico {
     }
 
     public void A43() {
-        instrucoes = "printf(\"" + token.getValor().getValorInteiro() + "\");";
+        instrucoes += "printf(\"" + token.getValor().getValorInteiro() + "\");";
         gerarCodigo(instrucoes); 
     }
 
     public void A46() {
-        instrucoes = "return 0;\n}";
+        instrucoes += "return 0;\n}";
         gerarCodigo(instrucoes);
     }
 
@@ -854,7 +908,7 @@ public class Sintatico {
             Registro registro = tabela.getIdentificador(token);
             if (registro.getCategoria().equals(Categoria.VARIAVEL)
                 || registro.getCategoria().equals(Categoria.PARAMETRO)) {
-                instrucoes = token.getValor().getValorIdentificador() + " = ";
+                instrucoes += token.getValor().getValorIdentificador() + " = ";
             }
         }
         else {
@@ -873,7 +927,7 @@ public class Sintatico {
                 || registro.getCategoria().equals(Categoria.PARAMETRO)
                 || registro.getCategoria().equals(Categoria.FUNCAO)) {
                 varDoFor = token.getValor().getValorIdentificador();
-                instrucoes = "for(" + varDoFor + "=";
+                instrucoes += "for(" + varDoFor + "=";
             }
             else {
                 mostrarMensagemErro("Erro A57: identificador nao e uma variavel");
@@ -885,12 +939,16 @@ public class Sintatico {
     }
 
     public void A59() {
-        instrucoes = "printf(\"" + token.getValor().getValorIdentificador() + "\");";
+        instrucoes += "printf(\"" + token.getValor().getValorIdentificador() + "\");";
         gerarCodigo(instrucoes); 
     }
 
     public void A61() {
-        instrucoes = "printf(\"\\n\");";
+        instrucoes += "printf(\"\\n\");";
         gerarCodigo(instrucoes);
+    }
+
+    public void A62() {
+        instrucoes += "if(";
     }
 }
