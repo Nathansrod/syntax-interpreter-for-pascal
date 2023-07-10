@@ -15,13 +15,33 @@ public class App {
             return;
         }*/
 
-        String nomeArquivo = "teste9 elogico";
+        // Teste único
+        String nomeArquivo = "teste10";
  
         substituirTabulacao(nomeArquivo);
  
         Sintatico sintatico = new Sintatico(nomeArquivo);
         sintatico.analisar();
- 
+
+        // Vários testes
+        /* String[] arquivosDeTeste = {
+            "teste1salario",
+            "teste2atribuicao",
+            "teste3expressao",
+            "teste4leitura",
+            "teste5condicional",
+            "teste6enquanto",
+            "teste7repete",
+            "teste8para",
+            "teste9elogico",
+            "teste10"
+        };
+
+        for (String teste : arquivosDeTeste) {
+            substituirTabulacao(teste);
+            Sintatico sintatico = new Sintatico(teste);
+            sintatico.analisar();
+        }*/
     }
  
     public static void substituirTabulacao(String nomeArquivo) {

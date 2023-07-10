@@ -327,12 +327,13 @@ public class Sintatico {
             id();
             if(token.getClasse().equals(Classe.cAtrib)) {
                 token = lexico.getToken();
-                A11();
                 expressao();  
+                A11();
                 if(testarPalavraReservada("to")) {
                     token = lexico.getToken();
                     A12();
                     expressao();
+                    A63();
                     if(testarPalavraReservada("do")) {
                         token = lexico.getToken();
                         if(testarPalavraReservada("begin")) {
@@ -714,7 +715,7 @@ public class Sintatico {
         registro.setCategoria(Categoria.PROGRAMAPRINCIPAL);
         tabela.inserirRegistro(registro);
         instrucoes += "#include <stdio.h>\n" +
-                     "#include <stlib.h>\n\n" +
+                     "#include <stdlib.h>\n\n" +
                      "int main(){";
         gerarCodigo(instrucoes);
     }
@@ -781,12 +782,11 @@ public class Sintatico {
     }
 
     public void A11() {
-        instrucoes += token.getValor().getValorInteiro() + ";";
+        instrucoes += ";";
     }
 
     public void A12() {
-        instrucoes += varDoFor + "<" + token.getValor().getValorInteiro() + ";" + varDoFor + "++){";
-        gerarCodigo(instrucoes);
+        instrucoes += varDoFor + "<";
     }
 
     public void A13() { // Fim do for
@@ -801,7 +801,13 @@ public class Sintatico {
 
     public void A15() {
         String sentenca_logica = instrucoes;
-        instrucoes += "}while(" + sentenca_logica + ");";
+        if (sentenca_logica.contains(">")) {
+            sentenca_logica = sentenca_logica.replace(">", "<");
+        }
+        else if (sentenca_logica.contains("<")){
+            sentenca_logica = sentenca_logica.replace("<", ">");
+        }
+        instrucoes = "}while(" + sentenca_logica + ");";
         gerarCodigo(instrucoes);
     }
 
@@ -965,5 +971,10 @@ public class Sintatico {
 
     public void A62() {
         instrucoes += "if(";
+    }
+
+    public void A63() {
+        instrucoes += ";" + varDoFor + "++){";
+        gerarCodigo(instrucoes);
     }
 }
