@@ -16,15 +16,15 @@ public class App {
         }*/
 
         // Teste único
-        String nomeArquivo = "teste10";
+        /*String nomeArquivo = "teste10";
  
         substituirTabulacao(nomeArquivo);
  
         Sintatico sintatico = new Sintatico(nomeArquivo);
-        sintatico.analisar();
+        sintatico.analisar();*/
 
         // Vários testes
-        /* String[] arquivosDeTeste = {
+        String[] arquivosDeTeste = {
             "teste1salario",
             "teste2atribuicao",
             "teste3expressao",
@@ -41,7 +41,7 @@ public class App {
             substituirTabulacao(teste);
             Sintatico sintatico = new Sintatico(teste);
             sintatico.analisar();
-        }*/
+        }
     }
  
     public static void substituirTabulacao(String nomeArquivo) {

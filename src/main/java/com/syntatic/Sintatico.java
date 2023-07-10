@@ -13,6 +13,7 @@ public class Sintatico {
     private LexicoAlt lexico;
     private Token token;
     private String nomeArquivo;
+    private int nivel = 0;
 
     private TabelaSimbolos tabela;
     private String nomeArquivoSaida;
@@ -49,7 +50,11 @@ public class Sintatico {
 
     private void gerarCodigo(String instrucoes) {
 		try {
-			bw.write(instrucoes + "\n");
+            String tabulation = "";
+            for (int i = 0; i < nivel; i++) {
+                tabulation += "\t";
+            }
+			bw.write(tabulation + instrucoes + "\n");
             this.instrucoes = "";
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -94,6 +99,7 @@ public class Sintatico {
             if(testarPalavraReservada("end")) {
                 token = lexico.getToken();
                 A46();
+                A21();
             }
             else {
                 mostrarMensagemErro("<corpo/begin> Faltou 'end'");
@@ -718,6 +724,7 @@ public class Sintatico {
                      "#include <stdlib.h>\n\n" +
                      "int main(){";
         gerarCodigo(instrucoes);
+        nivel++;
     }
 
     public void A2() {
@@ -791,12 +798,14 @@ public class Sintatico {
 
     public void A13() { // Fim do for
         instrucoes += "}";
+        nivel--;
         gerarCodigo(instrucoes);
     }
 
     public void A14() {
         instrucoes += "do {";
         gerarCodigo(instrucoes);
+        nivel++;
     }
 
     public void A15() {
@@ -808,6 +817,7 @@ public class Sintatico {
             sentenca_logica = sentenca_logica.replace("<", ">");
         }
         instrucoes = "}while(" + sentenca_logica + ");";
+        nivel--;
         gerarCodigo(instrucoes);
     }
 
@@ -818,25 +828,30 @@ public class Sintatico {
     public void A17() {
         instrucoes += "){";
         gerarCodigo(instrucoes);
+        nivel++;
     }
 
     public void A18() {
         instrucoes += "}";
+        nivel--;
         gerarCodigo(instrucoes);
     }
 
     public void A19() {
         instrucoes += "){";
         gerarCodigo(instrucoes);
+        nivel++;
     }
 
     public void A20() {
         instrucoes += "}";
+        nivel--;
         gerarCodigo(instrucoes);
     }
 
     public void A21() {
         instrucoes += "}";
+        nivel--;
         gerarCodigo(instrucoes);
     }
 
@@ -848,6 +863,7 @@ public class Sintatico {
     public void A25() {
         instrucoes += "else{";
         gerarCodigo(instrucoes);
+        nivel++;
     }
 
     public void A26() {
@@ -920,7 +936,7 @@ public class Sintatico {
     }
 
     public void A46() {
-        instrucoes += "return 0;\n}";
+        instrucoes += "return 0;";
         gerarCodigo(instrucoes);
     }
 
@@ -976,5 +992,6 @@ public class Sintatico {
     public void A63() {
         instrucoes += ";" + varDoFor + "++){";
         gerarCodigo(instrucoes);
+        nivel++;
     }
 }
